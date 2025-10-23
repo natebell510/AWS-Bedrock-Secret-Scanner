@@ -1,0 +1,35 @@
+{
+  "name": "chatgpt-api-tester",
+  "version": "1.0.0",
+  "description": "TypeScript ChatGPT API Key Tester",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts",
+    "test-keys": "ts-node scripts/test-keys.ts",
+    "test-chat": "ts-node scripts/test-chat.ts",
+    "quick-test": "ts-node scripts/quick-test.ts",
+    "clean": "rm -rf dist",
+    "test-real-key": "ts-node scripts/test-real-key.ts",
+    "validate-key": "ts-node scripts/validate-key.ts",
+    "test-project-key": "ts-node scripts/test-project-key.ts",
+    "test-with-retry": "ts-node scripts/test-with-retry.ts",
+    "wait-and-test": "ts-node scripts/wait-and-test.ts",
+    "fix-billing": "ts-node scripts/fix-billing-issues.ts",
+    "check-usage": "ts-node scripts/check-usage.ts"
+  },
+  "keywords": ["chatgpt", "api", "tester", "typescript"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "openai": "^4.20.1",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.5.0",
+    "typescript": "^5.1.6",
+    "ts-node": "^10.9.1",
+    "punycode": "^2.3.1"
+  }
+}
