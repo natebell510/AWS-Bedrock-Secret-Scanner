@@ -1,4 +1,4 @@
-import { ChatGPTClient } from 'src/chatgpt-client';
+import { ChatGPTClient } from '../src/chatgpt-client';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -14,7 +14,8 @@ async function main() {
         return;
     }
 
-    const client = new ChatGPTClient();
+    // Initialize the client with the API key
+    const client = new ChatGPTClient(apiKey);
 
     console.log('🔍 Diagnosing the issue...\n');
 
@@ -33,7 +34,8 @@ async function main() {
 
     console.log('\n2. Testing chat functionality...');
     try {
-        const chatResult = await client.sendMessage('Test', { max_tokens: 5 }, 1);
+        // Make sure the client is properly initialized before calling sendMessage
+        const chatResult = await client.sendMessage('Hello, this is a test message', { max_tokens: 5 }, 1);
         console.log('   ✅ Chat functionality works!');
         console.log(`   Response: ${chatResult}`);
     } catch (error: any) {
@@ -42,11 +44,14 @@ async function main() {
         console.log(`   Error: ${errorMsg}`);
 
         // Diagnose the specific issue
-        if (errorMsg.includes('quota') || errorMsg.includes('billing')) {
+        if (errorMsg.includes('quota') || errorMsg.includes('billing') || errorMsg.includes('payment') || errorMsg.includes('credit')) {
             await diagnoseBillingIssue(apiKey);
         } else if (errorMsg.includes('rate_limit')) {
             console.log('\n💡 This is a rate limit issue, not billing.');
             console.log('   Wait a few minutes and try again.');
+        } else if (errorMsg.includes('not initialized')) {
+            console.log('\n💡 Client initialization issue.');
+            console.log('   The client may need to be reinitialized.');
         }
     }
 }
