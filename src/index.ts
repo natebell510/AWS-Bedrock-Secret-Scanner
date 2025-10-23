@@ -1,4 +1,3 @@
-import { ChatGPTClient } from './chatgpt-client';
 import * as dotenv from 'dotenv';
 
 dotenv.config();

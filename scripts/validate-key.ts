@@ -1,4 +1,4 @@
-import { ChatGPTClient } from '../src/chatgpt-client';
+import { ChatGPTClient } from '@/chatgpt-client';
 import * as dotenv from 'dotenv';
 import * as readline from 'readline';
 
