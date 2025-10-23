@@ -5,7 +5,7 @@ dotenv.config();
 
 async function main() {
     console.log('🔑 Testing Your API Keys');
-    console.log('='.repeat(50));
+    console.log('='.repeat(5));
 
     // Your specific API keys from the original list
     const yourApiKeys = [

@@ -1,4 +1,4 @@
-import { ChatGPTClient } from '@/chatgpt-client';
+import { ChatGPTClient } from 'src/chatgpt-client';
 import * as dotenv from 'dotenv';
 
 dotenv.config();
