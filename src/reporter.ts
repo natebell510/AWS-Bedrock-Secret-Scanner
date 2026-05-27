@@ -1,56 +1,41 @@
-import { ReportEntry, AwsCredential } from './types.js';
+import { ReportEntry } from './types.js';
 import * as fs from 'fs';
 import * as path from 'path';
 import chalk from 'chalk';
 
 export class Reporter {
-  displayWarnings(findings: ReportEntry[]): void {
+  displayFindings(findings: ReportEntry[]): void {
     if (findings.length === 0) {
-      console.log(chalk.green('✅ No AWS credentials found!'));
+      console.log(chalk.green('\n✅ No credentials found.'));
       return;
     }
 
-    console.log(chalk.red.bold('\n⚠️  AWS CREDENTIALS DETECTED\n'));
-    console.log(chalk.yellow(`Found ${findings.length} potential security issue(s)\n`));
+    console.log(chalk.yellow(`\n📋 Found ${findings.length} credential(s)\n`));
 
-    const byCritical = findings.filter(f => f.severity === 'critical');
-    const byHigh = findings.filter(f => f.severity === 'high');
-    const byMedium = findings.filter(f => f.severity === 'medium');
+    const groups: Record<string, ReportEntry[]> = { critical: [], high: [], medium: [] };
+    findings.forEach(f => groups[f.severity].push(f));
 
-    if (byCritical.length > 0) {
+    if (groups.critical.length > 0) {
       console.log(chalk.bgRed.white.bold(' CRITICAL '));
-      byCritical.forEach(entry => this.displayEntry(entry));
+      groups.critical.forEach(e => this.displayEntry(e));
     }
-
-    if (byHigh.length > 0) {
+    if (groups.high.length > 0) {
       console.log(chalk.bgYellow.black.bold(' HIGH '));
-      byHigh.forEach(entry => this.displayEntry(entry));
+      groups.high.forEach(e => this.displayEntry(e));
     }
-
-    if (byMedium.length > 0) {
+    if (groups.medium.length > 0) {
       console.log(chalk.bgBlue.white.bold(' MEDIUM '));
-      byMedium.forEach(entry => this.displayEntry(entry));
+      groups.medium.forEach(e => this.displayEntry(e));
     }
-
-    console.log(chalk.gray('\n' + '='.repeat(80) + '\n'));
-    console.log(chalk.cyan.bold('REMEDIATION STEPS:'));
-    console.log(chalk.cyan('1. Revoke the exposed AWS credentials immediately'));
-    console.log(chalk.cyan('2. Create new credentials with the same permissions'));
-    console.log(chalk.cyan('3. Remove the credentials from git history (use BFG or git-filter-branch)'));
-    console.log(chalk.cyan('4. Force push the cleaned repository'));
-    console.log(chalk.cyan('5. Enable GitHub secret scanning for automated detection'));
-    console.log(chalk.cyan('6. Consider enabling AWS credential rotation policies\n'));
   }
 
   private displayEntry(entry: ReportEntry): void {
     const location = entry.repo ? `${entry.repo}/${entry.file}` : entry.location;
     const line = entry.line ? `:${entry.line}` : '';
-
     console.log(chalk.white(`  ${entry.type}`));
     console.log(chalk.gray(`    Location: ${location}${line}`));
     console.log(chalk.gray(`    Value:    ${entry.maskedValue}`));
-    console.log(chalk.gray(`    URL:      ${entry.url || 'N/A'}`));
-    console.log(chalk.gray(`    ${entry.recommendation}\n`));
+    console.log(chalk.gray(`    URL:      ${entry.url || 'N/A'}\n`));
   }
 
   exportToJSON(findings: ReportEntry[], filePath: string): void {
@@ -60,77 +45,27 @@ export class Reporter {
     const data = {
       timestamp: new Date().toISOString(),
       totalFindings: findings.length,
-      bySeverity: {
-        critical: findings.filter(f => f.severity === 'critical').length,
-        high: findings.filter(f => f.severity === 'high').length,
-        medium: findings.filter(f => f.severity === 'medium').length
+      byType: {
+        ACCESS_KEY: findings.filter(f => f.type === 'ACCESS_KEY').length,
+        SECRET_KEY: findings.filter(f => f.type === 'SECRET_KEY').length,
+        BEDROCK_KEY: findings.filter(f => f.type === 'BEDROCK_KEY').length,
+        MODEL: findings.filter(f => f.type === 'MODEL').length
       },
       findings: findings.map(f => ({
-        ...f,
-        // Redact sensitive info from export
+        type: f.type,
+        severity: f.severity,
+        value: f.value,
         maskedValue: f.maskedValue,
+        location: f.location,
+        repo: f.repo,
+        file: f.file,
+        line: f.line,
+        url: f.url,
         timestamp: f.timestamp.toISOString()
       }))
     };
 
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-    console.log(chalk.green(`✅ Report exported to ${filePath}`));
-  }
-
-  exportToCSV(findings: ReportEntry[], filePath: string): void {
-    const headers = ['Severity', 'Type', 'Masked Value', 'Location', 'Repo', 'File', 'Line', 'URL', 'Timestamp'];
-    const rows = [headers.join(',')];
-
-    for (const finding of findings) {
-      const row = [
-        finding.severity,
-        finding.type,
-        `"${finding.maskedValue}"`,
-        finding.location,
-        finding.repo || '',
-        finding.file || '',
-        finding.line || '',
-        finding.url || '',
-        finding.timestamp.toISOString()
-      ];
-      rows.push(row.join(','));
-    }
-
-    fs.writeFileSync(filePath, rows.join('\n'));
-    console.log(chalk.green(`✅ CSV report exported to ${filePath}`));
-  }
-
-  generateConsoleReport(results: ReportEntry[]): string {
-    let report = '\n' + '='.repeat(80) + '\n';
-    report += 'AWS BEDROCK SECURITY SCAN REPORT\n';
-    report += '='.repeat(80) + '\n\n';
-
-    report += `Total Findings: ${results.length}\n`;
-    report += `Critical: ${results.filter(r => r.severity === 'critical').length}\n`;
-    report += `High: ${results.filter(r => r.severity === 'high').length}\n`;
-    report += `Medium: ${results.filter(r => r.severity === 'medium').length}\n\n`;
-
-    if (results.length > 0) {
-      report += 'DETAILS:\n';
-      report += '-'.repeat(80) + '\n';
-
-      for (const entry of results) {
-        report += `\n[${entry.severity.toUpperCase()}] ${entry.type}\n`;
-        report += `  Location: ${entry.location}\n`;
-        report += `  Masked: ${entry.maskedValue}\n`;
-        report += `  Recommendation: ${entry.recommendation}\n`;
-      }
-    }
-
-    report += '\n' + '='.repeat(80) + '\n';
-    return report;
-  }
-
-  getSummary(findings: ReportEntry[]): string {
-    const critical = findings.filter(f => f.severity === 'critical').length;
-    const high = findings.filter(f => f.severity === 'high').length;
-    const medium = findings.filter(f => f.severity === 'medium').length;
-
-    return `Found ${findings.length} issues: ${critical} critical, ${high} high, ${medium} medium`;
+    console.log(chalk.green(`\n✅ Report saved to ${filePath}`));
   }
 }

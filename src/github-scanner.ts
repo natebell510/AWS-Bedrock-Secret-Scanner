@@ -240,17 +240,16 @@ export class GitHubScanner {
     for (const result of results) {
       for (const file of result.files) {
         for (const credential of file.credentials) {
-          const severity = this.getSeverity(credential.type);
           entries.push({
-            severity,
+            severity: this.getSeverity(credential.type),
             type: credential.type,
+            value: credential.value,
             maskedValue: credential.maskedValue,
             location: file.path,
             owner: result.repo.owner,
             repo: result.repo.name,
             file: file.path,
             url: file.url,
-            recommendation: this.getRecommendation(credential.type),
             timestamp: new Date()
           });
         }
@@ -264,15 +263,5 @@ export class GitHubScanner {
     if (type === 'SECRET_KEY' || type === 'ACCESS_KEY') return 'critical';
     if (type === 'BEDROCK_KEY') return 'high';
     return 'medium';
-  }
-
-  private getRecommendation(type: string): string {
-    const recommendations: Record<string, string> = {
-      'ACCESS_KEY': 'AWS Access Key exposed. Immediately revoke this key from AWS console.',
-      'SECRET_KEY': 'AWS Secret Access Key exposed. This is CRITICAL - revoke immediately.',
-      'BEDROCK_KEY': 'Bedrock API key exposed. Revoke and regenerate in AWS console.',
-      'MODEL': 'Bedrock model ID found. Verify no credentials are leaked in config.'
-    };
-    return recommendations[type] || 'Potential AWS credential detected.';
   }
 }

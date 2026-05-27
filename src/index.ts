@@ -66,12 +66,10 @@ async function handleSearch(args: string[]) {
   const results = await scanner.searchPublicRepos(query);
   const entries = scanner.convertToReportEntries(results);
 
-  reporter.displayWarnings(entries);
+  reporter.displayFindings(entries);
 
-  if (entries.length > 0) {
-    const timestamp = new Date().toISOString().split('T')[0];
-    reporter.exportToJSON(entries, path.join(reportsDir, `bedrock-scan-${timestamp}.json`));
-  }
+  const timestamp = new Date().toISOString().split('T')[0];
+  reporter.exportToJSON(entries, path.join(reportsDir, `bedrock-scan-${timestamp}.json`));
 }
 
 async function handleScanUser(args: string[]) {
@@ -89,12 +87,10 @@ async function handleScanUser(args: string[]) {
   const entries = scanner.convertToReportEntries(results);
 
   console.log(`\n📊 Scanned ${results.length} repositories`);
-  reporter.displayWarnings(entries);
+  reporter.displayFindings(entries);
 
-  if (entries.length > 0) {
-    const timestamp = new Date().toISOString().split('T')[0];
-    reporter.exportToJSON(entries, path.join(reportsDir, `bedrock-scan-${username}-${timestamp}.json`));
-  }
+  const timestamp = new Date().toISOString().split('T')[0];
+  reporter.exportToJSON(entries, path.join(reportsDir, `bedrock-scan-${username}-${timestamp}.json`));
 }
 
 async function handleScanOrg(args: string[]) {
@@ -112,12 +108,10 @@ async function handleScanOrg(args: string[]) {
   const entries = scanner.convertToReportEntries(results);
 
   console.log(`\n📊 Scanned ${results.length} repositories`);
-  reporter.displayWarnings(entries);
+  reporter.displayFindings(entries);
 
-  if (entries.length > 0) {
-    const timestamp = new Date().toISOString().split('T')[0];
-    reporter.exportToJSON(entries, path.join(reportsDir, `bedrock-scan-${org}-${timestamp}.json`));
-  }
+  const timestamp = new Date().toISOString().split('T')[0];
+  reporter.exportToJSON(entries, path.join(reportsDir, `bedrock-scan-${org}-${timestamp}.json`));
 }
 
 async function handleScanRepo(args: string[]) {
@@ -138,12 +132,10 @@ async function handleScanRepo(args: string[]) {
   const result = await scanner.scanRepository(owner, repo);
   const entries = scanner.convertToReportEntries([result]);
 
-  reporter.displayWarnings(entries);
+  reporter.displayFindings(entries);
 
-  if (entries.length > 0) {
-    const timestamp = new Date().toISOString().split('T')[0];
-    reporter.exportToJSON(entries, path.join(reportsDir, `bedrock-scan-${owner}-${repo}-${timestamp}.json`));
-  }
+  const timestamp = new Date().toISOString().split('T')[0];
+  reporter.exportToJSON(entries, path.join(reportsDir, `bedrock-scan-${owner}-${repo}-${timestamp}.json`));
 }
 
 async function handleScanLocal(args: string[]) {
@@ -154,18 +146,16 @@ async function handleScanLocal(args: string[]) {
   const entries: ReportEntry[] = results.map(result => ({
     severity: result.credentials.length > 0 ? 'critical' : 'medium',
     type: result.credentials[0]?.type || 'UNKNOWN',
+    value: result.credentials[0]?.value || '',
     maskedValue: result.credentials[0]?.maskedValue || 'N/A',
     location: result.location,
-    recommendation: 'Remove credential and commit to git history cleanup',
     timestamp: new Date()
   }));
 
-  reporter.displayWarnings(entries);
+  reporter.displayFindings(entries);
 
-  if (entries.length > 0) {
-    const timestamp = new Date().toISOString().split('T')[0];
-    reporter.exportToJSON(entries, path.join(reportsDir, `bedrock-scan-local-${timestamp}.json`));
-  }
+  const timestamp = new Date().toISOString().split('T')[0];
+  reporter.exportToJSON(entries, path.join(reportsDir, `bedrock-scan-local-${timestamp}.json`));
 }
 
 function showUsage() {

@@ -34,6 +34,7 @@ export interface GitHubSearchResult {
 export interface ReportEntry {
   severity: 'critical' | 'high' | 'medium';
   type: CredentialType;
+  value: string;
   maskedValue: string;
   location: string;
   owner?: string;
@@ -41,7 +42,6 @@ export interface ReportEntry {
   file?: string;
   line?: number;
   url?: string;
-  recommendation: string;
   timestamp: Date;
 }
 
