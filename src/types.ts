@@ -1,27 +1,59 @@
-export interface ChatMessage {
-    role: 'system' | 'user' | 'assistant';
-    content: string;
+export type CredentialType = 'ACCESS_KEY' | 'SECRET_KEY' | 'BEDROCK_KEY' | 'MODEL' | 'UNKNOWN';
+
+export interface AwsCredential {
+  type: CredentialType;
+  value: string;
+  maskedValue: string;
+  pattern: string;
+  confidence: 'high' | 'medium' | 'low';
+  lineNumber?: number;
 }
 
-export interface ChatCompletionOptions {
-    model?: string;
-    temperature?: number;
-    max_tokens?: number;
-    top_p?: number;
-    frequency_penalty?: number;
-    presence_penalty?: number;
+export interface ScanResult {
+  found: boolean;
+  location: string;
+  credentials: AwsCredential[];
+  timestamp: Date;
 }
 
-export interface ApiKeyTestResult {
-    apiKey: string;
-    maskedKey: string;
-    isValid: boolean;
-    error?: string;
-    response?: string;
-    model?: string;
+export interface GitHubSearchResult {
+  repo: {
+    name: string;
+    owner: string;
+    url: string;
+    private: boolean;
+  };
+  files: {
+    path: string;
+    url: string;
+    credentials: AwsCredential[];
+  }[];
+  credentials: AwsCredential[];
+}
+
+export interface ReportEntry {
+  severity: 'critical' | 'high' | 'medium';
+  type: CredentialType;
+  maskedValue: string;
+  location: string;
+  owner?: string;
+  repo?: string;
+  file?: string;
+  line?: number;
+  url?: string;
+  recommendation: string;
+  timestamp: Date;
+}
+
+export interface RepositoryInfo {
+  owner: string;
+  repo: string;
+  url: string;
+  language?: string;
+  stars?: number;
 }
 
 export interface ValidationResult {
-    isValid: boolean;  // Changed from isValidFormat to match implementation
-    issues: string[];
+  isValid: boolean;
+  issues: string[];
 }
