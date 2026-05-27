@@ -54,6 +54,9 @@ export class Reporter {
   }
 
   exportToJSON(findings: ReportEntry[], filePath: string): void {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+
     const data = {
       timestamp: new Date().toISOString(),
       totalFindings: findings.length,
