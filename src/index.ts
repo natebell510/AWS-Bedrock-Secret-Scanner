@@ -4,6 +4,7 @@ import * as url from 'url';
 import { AwsBedrockDetector } from './aws-bedrock-detector.js';
 import { GitHubScanner } from './github-scanner.js';
 import { Reporter } from './reporter.js';
+import { CredentialValidator } from './credential-validator.js';
 import { ReportEntry } from './types.js';
 
 const __dirname = path.dirname(url.fileURLToPath(import.meta.url));
@@ -14,6 +15,7 @@ dotenv.config();
 const detector = new AwsBedrockDetector();
 const reporter = new Reporter();
 const scanner = new GitHubScanner();
+const validator = new CredentialValidator();
 
 async function main() {
   const args = process.argv.slice(2);
@@ -65,6 +67,7 @@ async function handleSearch(args: string[]) {
 
   const results = await scanner.searchPublicRepos(query);
   const entries = scanner.convertToReportEntries(results);
+  await validator.validateEntries(entries);
 
   reporter.displayFindings(entries);
 
@@ -85,6 +88,7 @@ async function handleScanUser(args: string[]) {
 
   const results = await scanner.scanUserRepositories(username);
   const entries = scanner.convertToReportEntries(results);
+  await validator.validateEntries(entries);
 
   console.log(`\n📊 Scanned ${results.length} repositories`);
   reporter.displayFindings(entries);
@@ -106,6 +110,7 @@ async function handleScanOrg(args: string[]) {
 
   const results = await scanner.scanOrganizationRepositories(org);
   const entries = scanner.convertToReportEntries(results);
+  await validator.validateEntries(entries);
 
   console.log(`\n📊 Scanned ${results.length} repositories`);
   reporter.displayFindings(entries);
@@ -131,6 +136,7 @@ async function handleScanRepo(args: string[]) {
 
   const result = await scanner.scanRepository(owner, repo);
   const entries = scanner.convertToReportEntries([result]);
+  await validator.validateEntries(entries);
 
   reporter.displayFindings(entries);
 

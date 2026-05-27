@@ -35,7 +35,16 @@ export class Reporter {
     console.log(chalk.white(`  ${entry.type}`));
     console.log(chalk.gray(`    Location: ${location}${line}`));
     console.log(chalk.gray(`    Value:    ${entry.maskedValue}`));
-    console.log(chalk.gray(`    URL:      ${entry.url || 'N/A'}\n`));
+    console.log(chalk.gray(`    URL:      ${entry.url || 'N/A'}`));
+    if (entry.keyValidation) {
+      const v = entry.keyValidation;
+      const status = v.valid ? chalk.red.bold('✗ ACTIVE') : chalk.green('✓ INVALID/REVOKED');
+      console.log(chalk.gray(`    Key Status: ${status}`));
+      console.log(chalk.gray(`    Reason:   ${v.reason}`));
+      if (v.accountId) console.log(chalk.gray(`    Account:  ${v.accountId}`));
+      if (v.arn)       console.log(chalk.gray(`    ARN:      ${v.arn}`));
+    }
+    console.log();
   }
 
   exportToJSON(findings: ReportEntry[], filePath: string): void {
@@ -61,6 +70,7 @@ export class Reporter {
         file: f.file,
         line: f.line,
         url: f.url,
+        keyValidation: f.keyValidation ?? null,
         timestamp: f.timestamp.toISOString()
       }))
     };

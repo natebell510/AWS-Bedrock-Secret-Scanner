@@ -1,6 +1,6 @@
 import { Octokit } from '@octokit/rest';
 import { AwsBedrockDetector } from './aws-bedrock-detector.js';
-import { GitHubSearchResult, RepositoryInfo, AwsCredential, ReportEntry } from './types.js';
+import { GitHubSearchResult, ReportEntry } from './types.js';
 
 export class GitHubScanner {
   private octokit: Octokit;

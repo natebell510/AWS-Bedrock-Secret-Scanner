@@ -4,9 +4,6 @@ export interface AwsCredential {
   type: CredentialType;
   value: string;
   maskedValue: string;
-  pattern: string;
-  confidence: 'high' | 'medium' | 'low';
-  lineNumber?: number;
 }
 
 export interface ScanResult {
@@ -31,6 +28,13 @@ export interface GitHubSearchResult {
   credentials: AwsCredential[];
 }
 
+export interface KeyValidationResult {
+  valid: boolean;
+  reason: string;
+  accountId?: string;
+  arn?: string;
+}
+
 export interface ReportEntry {
   severity: 'critical' | 'high' | 'medium';
   type: CredentialType;
@@ -42,18 +46,6 @@ export interface ReportEntry {
   file?: string;
   line?: number;
   url?: string;
+  keyValidation?: KeyValidationResult;
   timestamp: Date;
-}
-
-export interface RepositoryInfo {
-  owner: string;
-  repo: string;
-  url: string;
-  language?: string;
-  stars?: number;
-}
-
-export interface ValidationResult {
-  isValid: boolean;
-  issues: string[];
 }
